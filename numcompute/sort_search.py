@@ -20,16 +20,34 @@ def stable_sort(arr):
 # Note: should sort by least important key first and then the most important key  
 # using np.lexsort() to sort with multiple keys  
 
-def multi_key_sort_Numpy(arr: np.ndarray, keys: list[str]): # the keys list is the priority order of index of column (the least --> the most important)
-    for i in keys:
-        sort_key_arr = np.sort(arr, kind='stable', order=keys[i])
-        arr = sort_key_arr # Update the new array 
-    return sort_key_arr
+# def multi_key_sort_Numpy(arr: np.ndarray, keys: list[str]): # the keys list is the priority order of index of column (the least --> the most important)
+#     for i in keys:
+#         sort_key_arr = np.sort(arr, kind='stable', order=keys[i])
+#         arr = sort_key_arr # Update the new array 
+#     return sort_key_arr
 # column students : (name, grade)
-dtype=[('name','U10'),('grade',int)]
-students = np.array([("Alice", 90), ("Bob", 90), ("Charlie", 85)], dtype = dtype)
 
-print(multi_key_sort_Numpy(students,['name','grade']))
+def multi_key_sort(arr: np.ndarray, keys: list[int], ascending = True):
+    keys_column = tuple(arr[:,k] for k in reversed(keys)) # need to reverse the keys as the lexsort, it sort from right to left 
+    if not ascending:
+        # negate each collumn in tuple so satisfy the descensed sorting
+        keys_column = tuple(col*(-1) for col in keys_column)
+    print(keys_column)
+    print(np.lexsort(keys_column))
+    sorted_arr = arr[np.lexsort(keys_column)] # need to implement the "ascending or descendind sort concept"
+    return sorted_arr
+
+arr = np.array([[3, 6, 2], 
+                [4, 2, 5], 
+                [3, 3, 1]])
+
+
+print(arr)
+print(multi_key_sort(arr,[0,2], False)) 
+print(multi_key_sort(arr,[0,1], True))
+
+
+# TODO: After times (-1) which only work with numeric array --> using argsort + Ranking to be reflective (work on int + string)
 
 
 
