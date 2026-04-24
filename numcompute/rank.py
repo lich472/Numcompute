@@ -41,39 +41,45 @@ def rank(data, method):
 # linear   → 20 + 0.2*(30-20)    → 22
 # Linear uses the fractional part 0.2 as a weight — how far between the two values you actually are.
 
-def percentile(data, q, interpolation):
-    if(q<0 or q>100):
+def percentile(data, q: np.ndarray, interpolation):
+    q_array = np.array(q)
+    if(np.any(q_array<0)or np.any(q_array>100)):
         raise ValueError("q should be from 0 to 100")
     if( not np.issubdtype(data.dtype, np.number) ):
         raise ValueError("Only numerics array is allowed.")
     if( data.ndim != 1):
         raise ValueError("Only 1D array is allowed.")
     sorted_arr = np.sort(data, kind='stable')
-    position = (q/100) * (len(data)-1)
-    lower_idx = int(position)
-    higher_idx = int(position) + 1
+    position = (q_array/100) * (len(data)-1)
+    lower_idx = np.floor(position).astype(int)
+    higher_idx = np.clip(lower_idx + 1, 0, len(data)-1) # using np.clip() here to prevent out of bounds
     match(interpolation.lower()):
         #'linear'|'lower'|'higher'|'midpoint'
         case 'lower': 
-            return sorted_arr[lower_idx] # check logic
+            return sorted_arr[lower_idx]
         case 'higher':
-            if(position % 1 == 0): # if integer/whole number -> take lower_idx
-                return sorted_arr[lower_idx]
-            else:
-                return sorted_arr[higher_idx]
+            # if(position % 1 == 0): # if integer/whole number -> take lower_idx
+            #     return sorted_arr[lower_idx]
+            # else:
+            #     return sorted_arr[higher_idx]
+            val = np.where(position % 1 == 0, sorted_arr[lower_idx], sorted_arr[higher_idx])
+            return val
         case 'average':
             # val = (sorted_arr[head_position] + sorted_arr[redundant_position])/2
-            if(position % 1 == 0): # if integer/whole number -> take lower_idx
-                return sorted_arr[lower_idx]
-            else:
-                val = (sorted_arr[lower_idx] + sorted_arr[higher_idx])/2 # using int() to return the lowest whole numer and round() to return the highest number
-                return val
+            # if(position % 1 == 0): # if integer/whole number -> take lower_idx
+            #     return sorted_arr[lower_idx]
+            # else:
+            #     val = (sorted_arr[lower_idx] + sorted_arr[higher_idx])/2 # using int() to return the lowest whole numer and round() to return the highest number
+            #     return val
+            val = np.where(position % 1 == 0, sorted_arr[lower_idx], (sorted_arr[lower_idx] + sorted_arr[higher_idx])/2)
+            return val
         case 'linear':
             # fomular: sorted_arr[head_position] + fraction*(sorted_arr[redundant_position] - sorted_arr[head_position])
-            fraction = position - int(position)
+            fraction = position - lower_idx
             val = sorted_arr[lower_idx] + fraction*(sorted_arr[higher_idx] - sorted_arr[lower_idx])
             return val
-score = np.array([10, 20, 30, 40, 50, 50])
+score = np.array([10, 20, 30, 40, 50])
 print(score.dtype)
-print(percentile(score, 50, 'linear'))
-print(percentile(score, 50, 'average'))            
+print(percentile(score, np.array([50,30]), 'linear'))
+print(percentile(score, 50, 'average')) 
+print(percentile(score, 100, 'linear'))        
