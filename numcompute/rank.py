@@ -1,3 +1,5 @@
+import numpy as np
+
 def rank(data, method):
     match(method.lower()): 
         case 'dense': #Dense ranks (0 = lowest)
