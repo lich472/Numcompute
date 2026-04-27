@@ -37,17 +37,17 @@
         - Input: 
 
             Array [0.95, 0.87, 0.99, 0.77, 0.91], k =3
-            print(topk(arr, 3, True, False))
-            print(topk(arr, 3, False, False))
-            print(topk(arr, 3, False, True))
-            print(topk(arr, 3, True, True))
+                print(topk(arr, 3, True, False))
+                print(topk(arr, 3, False, False))
+                print(topk(arr, 3, False, True))
+                print(topk(arr, 3, True, True))
 
         - Output: 
 
-            [0.91 0.95 0.99]
-            [0.77 0.91 0.87]
-            [3 4 1]
-            [4 0 2]
+                [0.91 0.95 0.99]
+                [0.77 0.91 0.87]
+                [3 4 1]
+                [4 0 2]
 
   - Implement **quickselect** for educational purposes: create a helper function partition() # using Lomuto's Partitioning (with choosing pivot is the last number of arr list)
     - partition() method to find new pivot position with new partition array (the value from the left side of pivot is less or equal than pivot and the right side of pivot is larger or equal than pivot)
@@ -71,8 +71,140 @@
         print(binary_search(arr, 12))
 
     - Output:
-    
+
         (0, False)
         (4, False)
         (4, True)
         (6, False)
+
+### `stats.py`
+- Basic descriptive statistics:
+  - Mean, median, standard deviation, min, max
+    - mean() method - compute the mean value of data based on axis with shape (m,n)
+        - axis = None --> compute all value --> return scalar
+        - axis = 0 --> compute per column --> return mean array with shape (n,)
+        - axis = 1 --> compute per row --> return mean array with shape (m,)
+        - Sample: 
+
+            - Input: 
+                    arr = np.array([[1,2,3],
+                    [4,5,6]])
+
+                    print(mean(arr))
+                    print(mean(arr, axis=0))
+                    print(mean(arr, axis=1))
+
+            - Output:
+                    3.5
+                    (array([2.5, 3.5, 4.5]), (3,))
+                    (array([2., 5.]), (2,))
+    
+    - median() method - middle value, sort everything, find the center
+        - Need to consider the length of number arr --> if even length -> add 2 middle /2 , odd length -> middle
+        - Work along with axis 
+            - axis = 0 -> find center of row with its shape
+            - axis = 1 -> find center of column with it shape
+            - axis = None -> median of all value -> return scalar 
+        - Sample:
+            - Input:
+                    arr = np.array([[1,2,3,4],
+                    [4,5,6,7],
+                    [7,8,9,10]])
+
+                    print(median(arr, axis=0))
+                    print(median(arr, axis=1))
+                    print(median(arr))
+            
+            - Output:
+                    print(median(arr, axis=0))
+                    print(median(arr, axis=1))
+                    print(median(arr))
+- Histogram - Divides a range of values into bins and counts how many elements fall into each bin
+    - Input: data - numeric data, bins - number of equal-width bins to divide the range into
+    - Output: edges, counts
+    - Sample:
+        - Input:
+                arr = np.array([[1,2,3,4],
+                                [5,6,7,8],
+                                [9,10,11,12]])
+
+                print(histogram(arr, bins=5))
+        - Output
+                (array([ 1. ,  3.2,  5.4,  7.6,  9.8, 12. ]), array([3, 2, 2, 2, 3]))
+            - Meanings:
+                - bins 0: [1, 3.2) -> count 3 #[1,2,3]
+                - bins 0: [3.2, 5.4) -> count 2 #[4,5]
+                - bins 0: [5.4, 7.6) -> count 2 #[6,7]
+                - bins 0: [7.6, 9.8) -> count 2 #[8,9]
+                - bins 0: [9.8, 12] -> count 3 #[10,11,12]
+- Quantiles (with NaN handling) - same concept with Percentile by different q scale (with Quantitles q from 0->1 and Percentile q from 0->100)
+    - Input: data, q scale from 0->1 and interpolation="linear" by default - the most mathematically standard interpolation for quantiles
+    - Output: return the value based on q, for example: 0.5 is 50%, 0.75 is 75%, ...
+    - Handle with NaN value by drop all NaN that value as filling with mean changes the distribution of your data — it affects where quantiles land
+    - Sample:
+        - Input: data = [10, 20, np.nan, 40, 50]
+            - print(quantiles(data,0))
+            - print(quantiles(data,0.5))
+            - print(quantiles(data,0.75))
+            - print(quantiles(data,1))
+        - Output: 
+            - 10.0
+            - 30.0
+            - 42.5
+            - 50.0
+
+### `rank.py`
+- `rank(data, method='average'|'dense'|'ordinal')` — handle ties (occuring the duplicate value)
+    - dense rank -> 0 is the lowest and ties the the same rank
+    - ordinal rank -> 0 is the lowest, ties is still treated as a unique value 
+    - average rank -> the average of the ranks they would have occupied
+    - Sample:
+        - Input:
+            - scores_with_ties = np.array([0.7, 0.9, 0.8, 0.8, 0.8])
+            - print(rank(scores_with_ties, 'average'))
+            - print(rank(scores_with_ties, 'ordinal'))
+            - print(rank(scores_with_ties, 'dense'))
+        - Output:
+            - [0. 4. 2. 2. 2.]
+            - [0 4 1 2 3]
+            - [0 2 1 1 1]
+- `percentile(data, q, interpolation='linear'|'lower'|'higher'|'midpoint')`
+    - `the formula: `
+    - Example with `score = np.array([10, 20, 30, 40, 50])`
+
+            The Position Formula
+            position = (q / 100) * (n - 1)
+
+            q=0   → position 0.0  → index 0  → value 10
+            q=50  → position 2.0  → index 2  → value 30
+            q=100 → position 4.0  → index 4  → value 50
+            q=30  → position 1.2  → between index 1 and 2
+
+            The Four Interpolation Answers To Position 1.2
+            lower    → take index 1         → 20
+            higher   → take index 2         → 30
+            midpoint → average both         → 25
+            linear   → 20 + 0.2*(30-20)    → 22
+
+    - Input: data - numerics array, q scale from 1->100 but could create a different scale array to save time and interpolation
+        - `lower` choosing the lower position of array value 
+        - `higher` choosing the higer position of array value 
+        - `lower` and `linear` is efficient when position of value is odd
+        - `average` mean of value from higher_idx and lower_idx
+        - `linear` how far between the two values you actually are
+
+    - Output: value of array based on q scale and its interpolation
+
+    - Sample:
+        - Input:
+
+                score = np.array([10, 20, 30, 40, 50])
+                print(percentile(score, np.array([50,30]), 'linear'))
+                print(percentile(score, 30, 'average')) 
+                print(percentile(score, 100, 'linear')) 
+
+        - Output:
+
+                [30. 22.]
+                25.0
+                50.0 

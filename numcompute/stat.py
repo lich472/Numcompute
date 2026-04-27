@@ -1,37 +1,20 @@
 import numpy as np
 from rank import percentile
-def mean(data, axis=None, keepdims=False):
-    arr=np.array(data)
-    if( not np.issubdtype(arr.dtype, np.number) ):
-        raise ValueError("Only numerics array is allowed.")
-    if(arr.size == 0):
-        raise ValueError("Empty array is not allowed.")
-    if axis is not None and not isinstance(axis, int):
-        raise TypeError("integer argument expected")
-    if axis is not None and not (-arr.ndim <= axis < arr.ndim):
-        raise ValueError(f"axis {axis} is out of bounds for array with {arr.ndim} dimensions")
+def mean(arr, axis=None, keepdims=False):
     sum = np.sum(arr, axis = axis, keepdims=keepdims)
     if(axis is None):
         mean = sum/(arr.size)
         return mean
     else:
         mean = sum/arr.shape[axis]
-        return mean
+        return mean, mean.shape
 
-def median(data, axis=None):
-    arr = np.array(data)
-    if( not np.issubdtype(arr.dtype, np.number) ):
-        raise ValueError("Only numerics array is allowed.")
-    if(arr.size == 0):
-        raise ValueError("Empty array is not allowed.")
-    if axis is not None and not isinstance(axis, int):
-        raise TypeError("integer argument expected")
-    if axis is not None and not (-arr.ndim <= axis < arr.ndim):
-        raise ValueError(f"axis {axis} is out of bounds for array with {arr.ndim} dimensions")
+def median(arr, axis=None):
+    arr = np.array(arr)
     sorted_arr = np.sort(arr, axis=axis, kind='stable')
     if(axis==None): # flat array into 1D and median 
         n = sorted_arr.size
-        if(n%2==0): #even -> #if even length -> add 2 middle /2 , odd length ->middle
+        if(n%2==0): #if even length -> add 2 middle /2 , odd length ->middle
             lower_idx = n//2 -1
             higher_idx = n//2
             median = (sorted_arr[lower_idx] + sorted_arr[higher_idx])/2
@@ -39,7 +22,7 @@ def median(data, axis=None):
         else:
             mid_idx = n//2
             median = sorted_arr[mid_idx]
-            return median
+            return median, median.shape
     # work along axis
     n = sorted_arr.shape[axis]
     mid_idx = n//2
@@ -47,21 +30,13 @@ def median(data, axis=None):
         lower = np.take(sorted_arr, mid_idx - 1, axis=axis)
         higher = np.take(sorted_arr, mid_idx, axis=axis)
         median = (lower + higher)/2
-        return median
+        return median, median.shape
     else:
         median = np.take(sorted_arr, mid_idx, axis=axis)
-        return median
+        return median, median.shape
 
-def std(data, axis=None, ddof=0): # ddof supports for both Popular (ddof = 0) and Sample (ddof = 1) standard deviation 
-    arr = np.array(data)
-    if( not np.issubdtype(arr.dtype, np.number) ):
-        raise ValueError("Only numerics array is allowed.")
-    if(arr.size == 0):
-        raise ValueError("Empty array is not allowed.")
-    if axis is not None and not isinstance(axis, int):
-        raise TypeError("integer argument expected")
-    if axis is not None and not (-arr.ndim <= axis < arr.ndim):
-        raise ValueError(f"axis {axis} is out of bounds for array with {arr.ndim} dimensions")
+def std(arr, axis=None, ddof=0): # ddof supports for both Popular (ddof = 0) and Sample (ddof = 1) standard deviation 
+    arr = np.array(arr)
     # need mean() method first
     arr_mean = mean(arr, axis = axis, keepdims=True) # using keepdims here to preserves the collapsed dimension as size 1, making broadcasting work correctly in all cases.
     deviation = np.subtract(arr,arr_mean)
@@ -74,8 +49,8 @@ def std(data, axis=None, ddof=0): # ddof supports for both Popular (ddof = 0) an
     std = np.sqrt(variance)
     return std
 
-def min(data, axis=None):
-    arr=np.array(data)
+def min(arr, axis=None):
+    arr=np.array(arr)
     if( not np.issubdtype(arr.dtype, np.number) ):
         raise ValueError("Only numerics array is allowed.")
     if(arr.size == 0):
@@ -88,8 +63,8 @@ def min(data, axis=None):
     return val
 
 
-def max(data, axis=None):
-    arr=np.array(data)
+def max(arr, axis=None):
+    arr=np.array(arr)
     if( not np.issubdtype(arr.dtype, np.number) ):
         raise ValueError("Only numerics array is allowed.")
     if(arr.size == 0):
@@ -101,8 +76,8 @@ def max(data, axis=None):
     val=np.max(arr,axis=axis)
     return val
 
-def histogram(data, bins=10):
-    arr=np.array(data)
+def histogram(arr, bins=10):
+    arr=np.array(arr)
     flat_arr=arr.ravel()
     if( not np.issubdtype(flat_arr.dtype, np.number) ):
         raise ValueError("Only numerics array is allowed.")
@@ -113,12 +88,12 @@ def histogram(data, bins=10):
     min_val = min(flat_arr)
     max_val = max(flat_arr)
     edges = np.linspace(min_val, max_val, bins + 1 ) # bins + 1 as if bins = 5 -> need 6 points
-    val = np.searchsorted(edges, flat_arr, side='left') - 1
+    val = np.searchsorted(edges, flat_arr, side='right') - 1
     bin_indices = np.clip(val, 0, bins - 1)
     count = np.bincount(bin_indices, minlength=bins) 
     return edges, count
 
-def quantiles(data, q, interpolation='linear'): # set interpolation="linear" by default
+def quantiles(data, q, interpolation='linear'):
     arr = np.array(data)
     q_arr=np.array(q)
     if( not np.issubdtype(arr.dtype, np.number) ):
@@ -126,7 +101,7 @@ def quantiles(data, q, interpolation='linear'): # set interpolation="linear" by 
     if(np.any(q_arr<0)or np.any(q_arr>1)):
         raise ValueError("q should be from 0 to 1")
     mask = np.isnan(arr)
-    clean_arr = arr[~mask] # drop all NaN value 
+    clean_arr = arr[~mask]
     if(clean_arr.size == 0):
         raise ValueError("Empty array is not allowed.")
     else:

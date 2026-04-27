@@ -80,8 +80,4 @@ def percentile(data, q: np.ndarray, interpolation):
             fraction = position - lower_idx
             val = sorted_arr[lower_idx] + fraction*(sorted_arr[higher_idx] - sorted_arr[lower_idx])
             return val
-score = np.array([10, 20, 30, 40, 50])
-print(score.dtype)
-print(percentile(score, np.array([50,30]), 'linear'))
-print(percentile(score, 50, 'average')) 
-print(percentile(score, 100, 'linear'))        
+        
