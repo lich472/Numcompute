@@ -10,15 +10,18 @@
   - Multi-key sort (sort by multiple columns): sort array followed by the specific the order of column (keys)
     - input (data, order of sorted column respectively, ascending = True(by default)) supporting str or num array --> output: sorted array 
     - Sample: 
-        - Input: arr = np.array([["Alice", 6, 2], 
+        - Input: 
+            arr = np.array([["Alice", 6, 2], 
                 ["Bob", 2, 5], 
                 ["Alice", 3, 1]]) 
                 arr = np.array([["Alice", 6, 2], 
                 ["Bob", 2, 5], 
                 ["Alice", 3, 1]])
+                
                 print(multi_key_sort(arr,[0,1], False)) 
                 print(multi_key_sort(arr,[0,1], True))
         - Output: 
+
                 [['Bob' '2' '5']
                 ['Alice' '6' '2']
                 ['Alice' '3' '1']]
