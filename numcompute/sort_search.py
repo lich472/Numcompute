@@ -21,39 +21,30 @@ def stable_sort(arr):
 # using np.lexsort() to sort with multiple keys  
 
 def multi_key_sort(arr: np.ndarray, keys: list[int], ascending = True):
-    keys_column = tuple(arr[:,k] for k in reversed(keys)) # need to reverse the keys as the lexsort, it sort from right to left 
+    keys_col = [arr[:,k] for k in reversed(keys)] # need to reverse the keys as the lexsort, it sort from right to left 
+    ranks=[np.unique(col, return_inverse = True)[1] for col in keys_col] # cannot use double np.argsort(np.argsort()) as it only supports for numerics arr
     if not ascending:
-        # negate each collumn in tuple so satisfy the descensed sorting
-        keys_column = tuple(col*(-1) for col in keys_column)
-    print(keys_column)
-    print(np.lexsort(keys_column))
-    sorted_arr = arr[np.lexsort(keys_column)] # need to implement the "ascending or descendind sort concept"
+        ranks = [rank*(-1) for rank in ranks] # reverse rank to descending order
+    ranks_tuple = tuple(ranks)
+    sorted_arr = arr[np.lexsort(ranks_tuple)] 
     return sorted_arr
 
-# TODO: After times (-1) which only work with numeric array --> using argsort + Ranking to be reflective (work on int + string)
-
-
-
-# Instead od using "for" loop --> better approach using ranking by vectorisation ?
-
-# - **Top-k / Partial Sort**:
-#   - `topk(values, k, largest=True, return_indices=True)` using `np.argpartition`
-#   - Implement **quickselect** for educational purposes
-def topk(values, k, largest=True, return_indices=True):
-    top_k_idx_partial_largest = np.argpartition(values, -k)[-k:]
-    top_k_idx_partial_smallest = np.argpartition(values, k)[:k]
-    top_k_vals_partial_largest = values[top_k_idx_partial_largest]
-    top_k_vals_partial_smallest = values[top_k_idx_partial_smallest]
+def topk(values: np.ndarray, k, largest=True, return_indices=True):
+    arr = np.array(values)
     if largest:
+        top_k_idx_partial_largest = np.argpartition(arr, -k)[-k:]
+        top_k_vals_partial_largest = arr[top_k_idx_partial_largest]
         if return_indices:
             return top_k_idx_partial_largest
         else:
             return top_k_vals_partial_largest
     else:
-        if not return_indices:
-            return top_k_vals_partial_smallest
-        else:
+        top_k_idx_partial_smallest = np.argpartition(arr, k)[:k]
+        top_k_vals_partial_smallest = arr[top_k_idx_partial_smallest]
+        if return_indices:
             return top_k_idx_partial_smallest
+        else:
+            return top_k_vals_partial_smallest
         
 def partition(arr, start_idx, end_idx): # using Lomuto's Partitioning
     pivot = arr[end_idx] # choose the pivot is the last right of arr
@@ -70,9 +61,19 @@ def partition(arr, start_idx, end_idx): # using Lomuto's Partitioning
     arr[end_idx] = temp
 
     pivot_idx = i
+    print(arr) # for debug purpose
     return pivot_idx
 
-def quick_search(arr, kth_smallest):
+def quickselect(data, kth_smallest):
+    arr = np.array(data)
+    if arr.size == 0:
+        raise ValueError("Empty array is not allowed.")
+    if kth_smallest < 1 or kth_smallest > len(arr):
+        raise ValueError(f"k must be between 1 and {len(arr)}")
+    if( not np.issubdtype(arr.dtype, np.number) ):
+        raise ValueError("Only numerics array is allowed.")
+    if( arr.ndim != 1):
+        raise ValueError("Only 1D array is allowed.")
     start_idx = 0
     end_idx = len(arr)-1
     kth_smallest -=1 # user-friendly -> change to natural think
@@ -87,7 +88,16 @@ def quick_search(arr, kth_smallest):
             start_idx = idx_pivot + 1
         elif(kth_smallest < idx_pivot): # start from the left of pivot_idx
             end_idx = idx_pivot - 1
-scores = np.array([1, 3, 7, 2, 5, 8, 10])
-print(partition(scores, 0, len(scores)-1))
-print(quick_search(scores,5))
 
+def binary_search(arr, target, low=0, high=None):
+    if high is None:
+        high = len(arr) - 1
+    if low > high:
+        return (low, False)
+    mid = (low + high) // 2
+    if arr[mid] == target:
+        return (mid, True)
+    elif arr[mid] > target:
+        return binary_search(arr, target, low, mid - 1)
+    else:
+        return binary_search(arr, target, mid + 1, high)

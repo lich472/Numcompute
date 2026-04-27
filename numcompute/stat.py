@@ -19,7 +19,7 @@ def mean(data, axis=None, keepdims=False):
         return mean
 
 def median(data, axis=None):
-    arr = np.array(arr)
+    arr = np.array(data)
     if( not np.issubdtype(arr.dtype, np.number) ):
         raise ValueError("Only numerics array is allowed.")
     if(arr.size == 0):
