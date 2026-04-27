@@ -5,6 +5,12 @@ from numcompute.rank import rank, percentile
 
 
 class TestRank(unittest.TestCase):
+    def test_rank_assignment_sample(self):
+        data = np.array([0.7, 0.9, 0.8, 0.8, 0.8])
+        np.testing.assert_allclose(rank(data, "average"), np.array([0., 4., 2., 2., 2.]))
+        np.testing.assert_array_equal(rank(data, "ordinal"), np.array([0, 4, 1, 2, 3]))
+        np.testing.assert_array_equal(rank(data, "dense"), np.array([0, 2, 1, 1, 1]))
+
     def test_dense_rank_with_ties(self):
         data = np.array([10, 30, 20, 20])
         result = rank(data, method="dense")

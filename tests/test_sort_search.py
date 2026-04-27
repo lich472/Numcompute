@@ -11,6 +11,11 @@ from numcompute.sort_search import (
 
 
 class TestStableSort(unittest.TestCase):
+    def test_stable_sort_strings(self):
+        arr = np.array(["Bob", "Alice", "Henry", "Alice", "Luca", "Braydon"])
+        expected = np.array(["Alice", "Alice", "Bob", "Braydon", "Henry", "Luca"])
+        np.testing.assert_array_equal(stable_sort(arr), expected)
+
     def test_stable_sort_basic(self):
         arr = np.array([3, 1, 2])
         result = stable_sort(arr)
@@ -151,6 +156,13 @@ class TestQuickSelect(unittest.TestCase):
 
 
 class TestBinarySearch(unittest.TestCase):
+    def test_binary_search_assignment_samples(self):
+        arr = np.array([1, 3, 5, 7, 9, 11])
+        self.assertEqual(binary_search(arr, -1), (0, False))
+        self.assertEqual(binary_search(arr, 8), (4, False))
+        self.assertEqual(binary_search(arr, 9), (4, True))
+        self.assertEqual(binary_search(arr, 12), (6, False))
+
     def test_binary_search_exists(self):
         arr = np.array([1, 3, 5, 7])
         idx, exists = binary_search(arr, 5)
