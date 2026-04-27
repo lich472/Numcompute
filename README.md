@@ -14,10 +14,11 @@
             arr = np.array([["Alice", 6, 2], 
                 ["Bob", 2, 5], 
                 ["Alice", 3, 1]]) 
-                arr = np.array([["Alice", 6, 2], 
+
+            arr = np.array([["Alice", 6, 2], 
                 ["Bob", 2, 5], 
                 ["Alice", 3, 1]])
-                
+
                 print(multi_key_sort(arr,[0,1], False)) 
                 print(multi_key_sort(arr,[0,1], True))
         - Output: 
@@ -34,6 +35,7 @@
     - Input: num array associated with k (top number of the list array) with largest = True and return_indices=True by default -> top k UNSORTED number 
     - Sample: 
         - Input: 
+
             Array [0.95, 0.87, 0.99, 0.77, 0.91], k =3
             print(topk(arr, 3, True, False))
             print(topk(arr, 3, False, False))
@@ -41,6 +43,7 @@
             print(topk(arr, 3, True, True))
 
         - Output: 
+
             [0.91 0.95 0.99]
             [0.77 0.91 0.87]
             [3 4 1]
@@ -50,19 +53,25 @@
     - partition() method to find new pivot position with new partition array (the value from the left side of pivot is less or equal than pivot and the right side of pivot is larger or equal than pivot)
     - quickselect() from the new partition arr list associated with pivot position we easily search the expected kth smallest number 
     - Sample Input: 
-    scores = [1, 3, 10, 7, 5, 8, 4]
-    print(quickselect(scores,5))
+
+        scores = [1, 3, 10, 7, 5, 8, 4]
+        print(quickselect(scores,5))
+
     - Output: 
+
         7 # from partition arr [ 1  3  4  5  7  8 10] 
 - **Searching**:
   - `binary_search(sorted_array, x)` returning insertion index and existence boolean
     - Input: 
+
         arr = [1, 3, 5, 7, 9, 11]
         print(binary_search(arr, -1))
         print(binary_search(arr, 8))
         print(binary_search(arr, 9))
         print(binary_search(arr, 12))
+
     - Output:
+    
         (0, False)
         (4, False)
         (4, True)
