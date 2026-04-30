@@ -36,6 +36,16 @@ NumCompute/
 │   ├── utils.py
 │   └── benchmarking.py
 ├── tests/
+│   ├── test_io.py
+│   ├── test_preprocessing.py
+│   ├── test_sort_search.py
+│   ├── test_rank.py
+│   ├── test_stat.py
+│   ├── test_metrics.py
+│   ├── test_optim.py
+│   ├── test_pipeline.py
+│   ├── test_utils.py
+│   └── test_benchmarking.py
 ├── demo/
 │   └── quickstart.ipynb
 ├── pyproject.toml
