@@ -1,0 +1,12 @@
+* 348de0b upate README about min(), max(), std(), stats.py
+* 2ff6695 finish
+* ba315d5 update README.md for stats.py and rank.py
+* 063feea Update README()
+* 440eefd update README()
+* 331d8ad update topk(), multi_key_sort(), debug for partition() and validation input in quickselect(), binary_search(), README() for sort_search.py
+* 8cba057 modify mean() support with keepdims for computing std and reduce complexity of median(), implement std(), min(), max(), histogram() and quantiles() handling NaN value
+* 7f8345b implement mean() and median() but have to reduce the complex of median()
+* 43efb23 update multi_key_sort() method but need to modify to work with str array
+* 2a38f34 update "percentile()" method that "q" parameter can be treated as scalar or 1D array
+* 97ef434 Added rank.py and sort_search.py to numcompute module
+* 0965c22 Initial commit
