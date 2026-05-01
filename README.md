@@ -119,6 +119,57 @@
                     print(median(arr, axis=0))
                     print(median(arr, axis=1))
                     print(median(arr))
+
+    - std() method to compute standard deviation with mean() and keepdims here to preserve the collapsed dimension as size 1, making broadcasting work correctly in all cases. 
+        - The formula: std = sqrt( sum( (x - mean)² ) / n ) 
+        - Integrate with ddof for both Popular (ddof = 0) and Sample (ddof = 1) standard deviation
+            - Sample: 
+            - Input:
+                    arr = np.array([[1,2,3],
+                    [4,5,6]])
+
+                    print(std(arr,axis=None))
+                    print(std(arr,axis=0))
+                    print(std(arr,axis=1))
+                    print(std(arr,axis=None, ddof=1))
+            
+            - Output:
+                    1.707825127659933
+                    [1.5 1.5 1.5]
+                    [0.81649658 0.81649658]
+                    1.8708286933869707
+    - min() return the smallest value based on axis 
+        - Axis = 0 -> return the smallest value per column 
+        - Axis = 1 -> return the smallest value per row 
+        - Axis = None -> return the smallest value of all value
+            - Sample: 
+            - Input: 
+                    arr = np.array([[1,2,3],
+                                    [4,5,6]])
+                    print(min(arr, axis=0))
+                    print(min(arr, axis=1))
+                    print(min(arr, axis=None))
+
+            - Output with its shape:
+                    (array([1, 2, 3]), (3,))
+                    (array([1, 4]), (2,))
+                    (1, ())
+    - max() return the largest of value based on axis
+        - Axis = 0 -> return the largest value per column
+        - Axis = 1 -> return the largest value per row
+        - Axis = None -> return the largest value of all value
+            - Sample:
+            - Input: 
+                    arr = np.array([[1,2,3],
+                                    [4,5,6]])
+                    print(max(arr, axis=0))
+                    print(max(arr, axis=1))
+                    print(max(arr, axis=None))
+
+            - Output:
+                    (array([4, 5, 6]), (3,))
+                    (array([3, 6]), (2,))
+                    (6, ())
 - Histogram - Divides a range of values into bins and counts how many elements fall into each bin
     - Input: data - numeric data, bins - number of equal-width bins to divide the range into
     - Output: edges, counts
@@ -133,10 +184,10 @@
                 (array([ 1. ,  3.2,  5.4,  7.6,  9.8, 12. ]), array([3, 2, 2, 2, 3]))
             - Meanings:
                 - bins 0: [1, 3.2) -> count 3 #[1,2,3]
-                - bins 0: [3.2, 5.4) -> count 2 #[4,5]
-                - bins 0: [5.4, 7.6) -> count 2 #[6,7]
-                - bins 0: [7.6, 9.8) -> count 2 #[8,9]
-                - bins 0: [9.8, 12] -> count 3 #[10,11,12]
+                - bins 1: [3.2, 5.4) -> count 2 #[4,5]
+                - bins 2: [5.4, 7.6) -> count 2 #[6,7]
+                - bins 3: [7.6, 9.8) -> count 2 #[8,9]
+                - bins 4: [9.8, 12] -> count 3 #[10,11,12]
 - Quantiles (with NaN handling) - same concept with Percentile by different q scale (with Quantitles q from 0->1 and Percentile q from 0->100)
     - Input: data, q scale from 0->1 and interpolation="linear" by default - the most mathematically standard interpolation for quantiles
     - Output: return the value based on q, for example: 0.5 is 50%, 0.75 is 75%, ...

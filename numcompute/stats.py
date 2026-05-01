@@ -3,11 +3,9 @@ from rank import percentile
 def mean(arr, axis=None, keepdims=False):
     sum = np.sum(arr, axis = axis, keepdims=keepdims)
     if(axis is None):
-        mean = sum/(arr.size)
-        return mean
+        return sum/(arr.size)
     else:
-        mean = sum/arr.shape[axis]
-        return mean, mean.shape
+        return sum/arr.shape[axis]
 
 def median(arr, axis=None):
     arr = np.array(arr)
@@ -60,7 +58,7 @@ def min(arr, axis=None):
     if axis is not None and not (-arr.ndim <= axis < arr.ndim):
         raise ValueError(f"axis {axis} is out of bounds for array with {arr.ndim} dimensions")
     val=np.min(arr,axis=axis)
-    return val
+    return val, val.shape
 
 
 def max(arr, axis=None):
@@ -74,7 +72,7 @@ def max(arr, axis=None):
     if axis is not None and not (-arr.ndim <= axis < arr.ndim):
         raise ValueError(f"axis {axis} is out of bounds for array with {arr.ndim} dimensions")
     val=np.max(arr,axis=axis)
-    return val
+    return val, val.shape
 
 def histogram(arr, bins=10):
     arr=np.array(arr)
