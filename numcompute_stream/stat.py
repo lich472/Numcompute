@@ -33,21 +33,11 @@ def mean(data, axis=None, keepdims=False):
     return total / arr.shape[axis]
 
 def chunk_mean(X_chunk):
-    arr = _validate_numeric(data)
-    total = 0
-    count = 0
-    if X.ndim = 1:
-        X = X.reshape(-1,1)
-    mean = np.nanmean(X, axis=0)
-    return mean
+    arr = _validate_numeric(X_chunk)
 
-X_chunk = np.array([
-    [1.0, 2.0, 3.0],
-    [4.0, 5.0, 6.0],
-    [7.0, 8.0, 9.0]
-])
-# shape: (3 samples, 3 features)
-print(chunk_mean(X_chunk))
+    if arr.ndim == 1:
+        arr = arr.reshape(-1,1)
+    return np.nanmean(arr, axis=0)
 
 
 def median(data, axis=None):
@@ -95,6 +85,26 @@ def std(data, axis=None, ddof=0):
 
     return np.sqrt(variance)
 
+def chunk_variance(X_chunk, ddof=0):
+    arr = _validate_numeric(X_chunk)
+
+    if arr.ndim == 1:
+        arr = arr.reshape(-1, 1)
+
+    if not isinstance(ddof, int):
+        raise TypeError("ddof must be an integer.")
+
+    n = arr.shape[0] - np.sum(np.isnan(arr), axis=0)
+
+    if n - ddof <= 0:
+        raise ValueError("ddof is too large for the number of values.")
+    
+    arr_mean = chunk_mean(arr)
+    squared_deviation = (arr - arr_mean) ** 2
+    variance = np.nansum(squared_deviation, axis=0) / (n - ddof)
+
+    return variance
+
 
 def min(data, axis=None):
     arr = _validate_numeric(data)
@@ -129,6 +139,18 @@ def histogram(data, bins=10):
     counts = np.bincount(bin_indices, minlength=bins)
 
     return edges, counts
+
+# Key Difference from the existing histogram()
+# The existing one computes edges from the data — so edges change every chunk. For streaming I need fixed edges passed in, so counts are comparable across chunks.
+
+def chunk_histogram(X_chunk, edges):
+    arr = _validate_numeric(X_chunk).ravel()
+
+    arr = arr[~np.isnan(arr)]  # remove NaNs before binning
+    bin_indices = np.searchsorted(edges, arr, side="right") - 1
+    bin_indices = np.clip(bin_indices, 0, len(edges) - 2)  #  clip indices
+    counts = np.bincount(bin_indices, minlength=len(edges) - 1)
+    return counts
 
 def percentile(data, q: np.ndarray, interpolation):
     q_array = np.array(q)
@@ -182,4 +204,63 @@ def quantiles(data, q, interpolation="linear"):
 
     return percentile(clean_arr, q_arr * 100, interpolation=interpolation)
 
-def quantiles_in_chunks(data, )
+def chunk_quantiles(X_chunk, q):
+    arr = _validate_numeric(X_chunk)
+
+    if arr.ndim == 1:
+        arr = arr.reshape(-1, 1)
+    
+    q_arr = np.asarray(q, dtype=float)
+
+    if np.any(q_arr < 0) or np.any(q_arr > 1):
+        raise ValueError("q must be between 0 and 1.")
+
+    percentile = np.nanpercentile(arr, q_arr * 100, axis=0)
+
+    return percentile
+
+class StreamingStats: 
+    def __init__(self, window_size=None, histogram_edges=None):
+        """
+        Parameters:
+        - window_size: Int. Max number of chunks to keep in memory. 
+                       If None, keeps ALL chunks (infinite window).
+        - histogram_edges: Array-like. Fixed bin boundaries required for chunk_histogram.
+        """
+        self.window_size = window_size
+        self.edges = np.asarray(histogram_edges) if histogram_edges is not None else None
+        self.chunks = []  # Stores the sliding window of data chunks
+
+    def update_stats(self, X_chunk):
+        """
+        API Requirement: Accepts a new data chunk, updates the window pipeline,
+        and returns the recalculated rolling metrics dictionary.
+        """
+        arr = _validate_numeric(X_chunk)
+        if arr.ndim == 1:
+            arr = arr.reshape(-1, 1)
+
+        self.chunks.append(arr) # Append new chunk to the sliding window history
+
+        if self.window_size is not None and len(self.chunks) > self.window_size:
+            self.chunks.pop(0)
+        
+        X_active = np.vstack(self.chunks) # Consolidate active chunks in the current window for analysis
+
+        mean = chunk_mean(X_active)
+        variance = chunk_variance(X_active, ddof=0)
+        
+        quantile = chunk_quantiles(X_active, q=[0.25, 0.75]) # streaming quantiles (defaults to 25th and 75th percentiles)
+
+        histogram = None
+        if self.edges is not None:
+            histogram = chunk_histogram(X_active, self.edges)
+
+        metrics = {
+            "mean": mean,
+            "variance": variance,
+            "quantiles": quantile,
+            "histogram": histogram
+        }
+        
+        return metrics
