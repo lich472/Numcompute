@@ -116,6 +116,41 @@ class Pipeline:
         Return the final pipeline step.
         """
         return self.steps[-1]
+    
+    def partial_fit(self, X_chunk, y_chunk = None):
+        """
+            1. loop through middle steps:
+               - if step has partial_fit -> call partial_fit(X) and then transform(X)
+               - else: just transform(X) (step is already fitted)
+            2. last step:
+               - if estimator -> partial_fit(X, y)
+               - else: partial_fit(X)
+            3. self.fitted = True
+            4. return self
+        """
+        X_cur = X_chunk
+
+        for _, step in self.middle_steps():
+            if callable(getattr(step, "partial_fit", None)):
+                step.partial_fit(X_cur)
+            X_cur = step.transform(X_cur)
+
+        last_name, last_step = self.last()
+
+        if is_estimator(last_step):
+            if y_chunk is None:
+                raise ValueError(f"Step '{last_name}' needs y_chunk to train on.")
+            if not callable(getattr(last_step, "partial_fit", None)):
+                raise TypeError(f"Step '{last_name}' does not support partial_fit().")
+            last_step.partial_fit(X_cur, y_chunk)
+        else:
+            if callable(getattr(last_step, "partial_fit", None)):
+                last_step.partial_fit(X_cur)
+            else:
+                raise TypeError(f"Step '{last_name}' does not support partial_fit().")
+
+        self.fitted = True
+        return self
 
     def fit(self, X, y=None):
         """
