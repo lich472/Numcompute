@@ -50,12 +50,10 @@ class StandardScaler:
         chunk_var = np.nanvar(X, axis=0)
         
         if self.total == 0:
-            self.total = X_chunk.size
-            self.running_mean = self.mean
-            self.running_M2 = self.chunk_var * self.chunk_n
-        else :
-            # Welford update
-            new_total += self.total + chunk_n
+            self.running_mean = chunk_mean   
+            self.running_M2 = chunk_var * chunk_n 
+        else:
+            new_total = self.total + chunk_n 
             delta = chunk_mean - self.running_mean
             self.running_mean += delta * chunk_n / new_total
             delta2 = chunk_mean - self.running_mean
@@ -215,8 +213,8 @@ class MinMaxScaler:
             self.data_min = chunk_min
             self.data_max = chunk_max
         else:
-            self.data_min = np.minimum(self.data_running_min, chunk_min)
-            self.data_max = np.minimum(self.data_running_max, chunk_max)
+            self.data_min = np.minimum(self.data_min, chunk_min)
+            self.data_max = np.maximum(self.data_max, chunk_max) 
 
         self.total += X.shape[0]
 
@@ -492,7 +490,8 @@ class Imputer:
             raise ValueError("strategy must be 'mean', 'median', or 'constant' ")
         self.strategy = strategy
         self.value_for_constant = value_for_constant
-        self.statistic = None 
+        self.statistics = None 
+        self.running_mean = None
         self.total = 0
         self.fitted = False
     
@@ -518,15 +517,16 @@ class Imputer:
             raise ValueError("Imputer: no data to fit on.")
 
         if (self.strategy).lower() == 'mean':
-            self.statistic = np.nanmean(X)
+            self.statistics = np.nanmean(X, axis=0) 
         elif (self.strategy).lower() == 'median':
-            self.statistic = np.nanmedian(X)
-        elif self.strategy(self.strategy).lower() == 'constant':
-            if self.fill_value is None:
-                raise ValueError("value_for_constant must be set when strategy='constant'.")
-            self.statistic = np.full(X.shape[1], self.fill_value)
+            self.statistics = np.nanmedian(X, axis=0) 
+        elif self.strategy.lower() == 'constant':
+            if self.value_for_constant is None:
+                raise ValueError("value_for_constant must be set when strategy='constant' ")
+            self.statistics = np.full(X.shape[1], self.value_for_constant)
 
         self.total = X.shape[0]
+        self.n_features = X.shape[1]
         self.fitted = True
         return self
     
@@ -558,11 +558,12 @@ class Imputer:
             self.statistics = np.nanmedian(X, axis=0)
 
         elif self.strategy == 'constant':
-            if self.fill_value is None:
-                raise ValueError("fill_value must be set when strategy='constant'.")
-            self.statistics = np.full(X.shape[1], self.fill_value)
+            if self.value_for_constant is None:
+                raise ValueError("value_for_constant must be set when strategy='constant'.")
+            self.statistics = np.full(X.shape[1], self.value_for_constant)
 
         self.total += chunk_n
+        self.n_features = X.shape[1]
         self.fitted = True
         return self
     

@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from numcompute_stream.stat import chunk_mean, chunk_variance, chunk_quantiles, chunk_histogram
+from numcompute_stream.stats import chunk_mean, chunk_variance, chunk_quantiles, chunk_histogram
 
 
 class TestMean(unittest.TestCase):
