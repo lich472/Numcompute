@@ -215,3 +215,74 @@ def f1(y_true, y_pred, positive_label=1):
         return 0.0
 
     return 2 * (p * r) / denom
+
+class StreamingMetrics:
+    def __init__(self, labels=None, positive_label=1, window_size=None):
+        self.labels = labels
+        self.positive_label = positive_label
+        self.window_size = window_size
+        self.y_true_chunks = []
+        self.y_pred_chunks = []
+        self.y_score_chunks = []
+
+    def update(self, y_true_chunk, y_pred_chunk, y_score_chunk=None):
+        y_t, y_p = _validate_same_shape(y_true_chunk, y_pred_chunk)
+        
+        if y_score_chunk is None:
+            y_s = y_p.astype(float)
+        else:
+            y_s = np.asarray(y_score_chunk)
+        
+        self.y_true_chunks.append(y_t)
+        self.y_pred_chunks.append(y_p)
+        self.y_score_chunks.append(y_s)
+
+        # drop old chunks if window_size is set
+        if self.window_size is not None and len(self.y_true_chunks) > self.window_size:
+            self.y_true_chunks.pop(0)
+            self.y_pred_chunks.pop(0)
+            self.y_score_chunks.pop(0)
+
+    def reset(self):
+        self.y_true_chunks = []
+        self.y_pred_chunks = []
+        self.y_score_chunks = []
+
+    def result(self):
+        if len(self.y_true_chunks) == 0:
+            raise ValueError("No data yet, call update() first.")
+
+        y_true = np.concatenate(self.y_true_chunks)
+        y_pred = np.concatenate(self.y_pred_chunks)
+        y_score = np.concatenate(self.y_score_chunks)
+
+        pos_scores = []
+        neg_scores = []
+        for i in range(len(y_true)):
+            if y_true[i] == self.positive_label:
+                pos_scores.append(y_score[i])
+            else:
+                neg_scores.append(y_score[i])
+        
+        # If the history only contains 1 class, AUC cannot be computed
+        if len(pos_scores) == 0 or len(neg_scores) == 0:
+            auc_val = 0
+        else:
+            matches = 0
+            for p in pos_scores:
+                for n in neg_scores:
+                    if p > n:
+                        matches += 1
+                    elif p == n:
+                        matches += 0.5
+            auc_val = matches / (len(pos_scores) * len(neg_scores))
+
+        return {
+            'accuracy': accuracy(y_true, y_pred),
+            'precision': precision(y_true, y_pred, self.positive_label),
+            'recall': recall(y_true, y_pred, self.positive_label),
+            'f1': f1(y_true, y_pred, self.positive_label),
+            # Added self.labels to keep matrix size fixed
+            'confusion_matrix': confusion_matrix(y_true, y_pred, labels=self.labels),
+            'auc': auc_val
+        }
