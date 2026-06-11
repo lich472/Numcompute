@@ -1,6 +1,10 @@
+import sys
+import os
+sys.path.append(os.path.abspath('.'))
+
 import time
 import numpy as np
-from tree import DecisionTreeClassifier
+from numcompute_stream.tree import DecisionTreeClassifier
 
 def naive_loop_impurity(y):
     if len(y) == 0:
